@@ -28,9 +28,26 @@ struct RemotePasteFileTransferPolicyTests {
             uuid: UUID(uuidString: "01234567-89AB-CDEF-0123-456789ABCDEF")!
         )
 
-        #expect(path == "/home/test user/.cache/cmux/paste/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/cmux-paste-01234567-89ab-cdef-0123-456789abcdef.pngtouch")
+        #expect(path == "/home/test user/.cache/cmux/paste/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/cmux-paste-01234567-clipboard_image.pngtouch")
         #expect(!path.contains("/tmp"))
         #expect(!path.contains(";"))
+    }
+
+    @Test("remote paths keep the dropped file's name without shell characters")
+    func remotePathKeepsSanitizedName() {
+        let policy = RemotePasteFileTransferPolicy(
+            sessionID: UUID(uuidString: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")!
+        )
+        let path = policy.remotePath(
+            for: URL(fileURLWithPath: "/tmp/Rechnung Ma\u{0308}rz \"$(x)`y`\\.pdf"),
+            homeDirectory: "/h",
+            uuid: UUID(uuidString: "01234567-89AB-CDEF-0123-456789ABCDEF")!
+        )
+
+        #expect(path == "/h/.cache/cmux/paste/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/cmux-paste-01234567-Rechnung_M\u{00E4}rz_x_y.pdf")
+        #expect(policy.finalizeScript(for: path) != "false")
+        #expect(policy.remotePath(for: URL(fileURLWithPath: "/tmp/$$$.pdf"), homeDirectory: "/h", uuid: UUID(uuidString: "01234567-89AB-CDEF-0123-456789ABCDEF")!)
+            .hasSuffix("/cmux-paste-01234567.pdf"))
     }
 
     @Test("maintenance output resolves an absolute home and accepts absolute paths")
@@ -48,7 +65,7 @@ struct RemotePasteFileTransferPolicyTests {
             uuid: UUID(uuidString: "01234567-89AB-CDEF-0123-456789ABCDEF")!
         )
         #expect(policy.finalizeScript(for: path) != "false")
-        #expect(policy.cleanupScript(for: [path]).contains("cmux-paste-01234567-89ab-cdef-0123-456789abcdef.png"))
+        #expect(policy.cleanupScript(for: [path]).contains("cmux-paste-01234567-a.png"))
     }
 
     @Test("maintenance removes old files and trims oldest files over the cap")

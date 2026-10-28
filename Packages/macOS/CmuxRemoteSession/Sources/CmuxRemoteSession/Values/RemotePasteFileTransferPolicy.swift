@@ -75,7 +75,10 @@ public struct RemotePasteFileTransferPolicy: Equatable, Sendable {
     private func relativePath(for fileURL: URL, uuid: UUID) -> String {
         let suffix = sanitizedExtension(fileURL.pathExtension)
         let extensionSuffix = suffix.isEmpty ? "" : "." + suffix
-        let fileName = "cmux-paste-" + uuid.uuidString.lowercased() + extensionSuffix
+        // Keep the dropped file's own name readable for the remote agent; the short id keeps names unique.
+        let stem = sanitizedStem(fileURL.deletingPathExtension().lastPathComponent)
+        let id = String(uuid.uuidString.lowercased().prefix(8))
+        let fileName = "cmux-paste-" + id + (stem.isEmpty ? "" : "-" + stem) + extensionSuffix
         return relativeDirectoryPath + "/" + fileName
     }
 
@@ -175,6 +178,21 @@ public struct RemotePasteFileTransferPolicy: Equatable, Sendable {
             return nil
         }
         return fileName
+    }
+
+    /// Letters and digits (any script), `-` and `_`; every other run of characters becomes one `_`,
+    /// so the name is safe inside the double-quoted remote shell scripts and when typed into a terminal.
+    private func sanitizedStem(_ value: String) -> String {
+        var result = ""
+        for scalar in value.precomposedStringWithCanonicalMapping.unicodeScalars {
+            if CharacterSet.alphanumerics.contains(scalar) || scalar == "-" || scalar == "_" {
+                result.unicodeScalars.append(scalar)
+            } else if !result.hasSuffix("_") {
+                result += "_"
+            }
+            if result.unicodeScalars.count >= 64 { break }
+        }
+        return result.trimmingCharacters(in: CharacterSet(charactersIn: "_-"))
     }
 
     private func sanitizedExtension(_ value: String) -> String {
