@@ -16,6 +16,7 @@ enum CmuxSurfaceTabBarBuiltInAction: String, Codable, Sendable, CaseIterable, Ha
     case copyWorkingDirectory = "cmux.copyWorkingDirectory"
     case copyProjectRoot = "cmux.copyProjectRoot"
     case copyScreen = "cmux.copyScreen"
+    case paneTabs = "cmux.paneTabs"  // cmux Lez
 
     init?(configID: String) {
         switch configID {
@@ -50,6 +51,8 @@ enum CmuxSurfaceTabBarBuiltInAction: String, Codable, Sendable, CaseIterable, Ha
             self = .copyProjectRoot
         case "cmux.copyScreen", "copyScreen":
             self = .copyScreen
+        case "cmux.paneTabs", "paneTabs":
+            self = .paneTabs
         default:
             return nil
         }
@@ -92,6 +95,8 @@ enum CmuxSurfaceTabBarBuiltInAction: String, Codable, Sendable, CaseIterable, Ha
             return (String(localized: "command.copyProjectRoot.title", defaultValue: "Copy Project Root"), ["copy", "clipboard", "project", "git", "root", "repository", "path"])
         case .copyScreen:
             return (String(localized: "command.copyScreen.title", defaultValue: "Copy Visible Screen"), ["copy", "clipboard", "screen", "output", "terminal", "visible"])
+        case .paneTabs:
+            return (String(localized: "command.paneTabs.title", defaultValue: "Tabs in This Pane"), ["tabs", "list", "pane", "surface"])
         }
     }
 
@@ -125,13 +130,15 @@ enum CmuxSurfaceTabBarBuiltInAction: String, Codable, Sendable, CaseIterable, Ha
             return "arrow.triangle.branch"
         case .copyScreen:
             return "text.viewfinder"
+        case .paneTabs:
+            return "list.bullet"
         }
     }
 
     var bonsplitAction: BonsplitConfiguration.SplitActionButton.Action? {
         switch self {
         case .newWorkspace, .newAgentChat, .cloudVM, .newCloudWorkspace, .newCloudMachine, .mobileConnect, .newSimulator,
-             .copyWorkingDirectory, .copyProjectRoot, .copyScreen:
+             .copyWorkingDirectory, .copyProjectRoot, .copyScreen, .paneTabs:
             return nil
         case .newTerminal:
             return .newTerminal
@@ -161,7 +168,7 @@ extension CmuxSurfaceTabBarBuiltInAction {
         case .splitRight: return .splitRight
         case .splitDown: return .splitDown
         case .newAgentChat, .cloudVM, .mobileConnect, .newSimulator,
-             .copyWorkingDirectory, .copyProjectRoot, .copyScreen: return nil
+             .copyWorkingDirectory, .copyProjectRoot, .copyScreen, .paneTabs: return nil
         }
     }
 

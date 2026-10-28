@@ -3265,6 +3265,8 @@ final class Workspace: Identifiable, ObservableObject, FilePreviewTabMetadataHos
     var tmuxWorkspaceFlashToken: UInt64 { tmuxWorkspaceFlash.token }
     var tmuxOverlaySelectionRevision: UInt64 = 0
     var manualUnreadMarkedAt: [UUID: Date] = [:]
+    /// cmux Lez: when each tab was last used (kept focus for a second). Memory only.
+    var panelLastUsedAt: [UUID: Date] = [:]
     /// The sidebar-metadata sub-model (CmuxSidebar): owns the
     /// sidebar status entries, metadata blocks, log entries, progress, and
     /// git-branch / pull-request presentation state. The legacy accessors below
@@ -14282,6 +14284,7 @@ extension Workspace: BonsplitDelegate {
         let activationIntent = focusIntent ?? activationPanel.preferredFocusIntentForActivation()
         activationPanel.prepareFocusIntentForActivation(activationIntent)
         let panelId = effectiveFocusedPanelId
+        scheduleLezMarkPanelUsed(panelId)
         // The user reached this pane, so its finished OSC 7501 records have been seen.
         dismissCompletedProgramStatus(panelId: panelId)
         if let terminalPanel = panel as? TerminalPanel {
@@ -15473,6 +15476,8 @@ extension Workspace: BonsplitDelegate {
                 }
             case .newSimulator:
                 _ = newSimulatorSurface(inPane: pane, focus: true)
+            case .paneTabs:
+                showLezPaneTabsMenu(inPane: pane)
             case .copyWorkingDirectory, .copyProjectRoot, .copyScreen:
                 if let copyAction = builtInAction.terminalCopyAction {
                     // Target the tab selected in the pane whose button was

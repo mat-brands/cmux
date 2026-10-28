@@ -5312,7 +5312,8 @@ struct ContentView: View {
     ) -> Bool {
         let scope = commandPaletteListScope(for: query)
         guard scope == .switcher else { return false }
-        return searchAllSurfaces && !commandPaletteQueryForMatching(query: query, scope: scope).isEmpty
+        // cmux Lez: tabs show with an empty query too, so Cmd+P opens as a last-used tab list.
+        return searchAllSurfaces
     }
 
     /// Refreshes the palette corpus and starts any background availability probes it depends on.
@@ -6210,6 +6211,14 @@ struct ContentView: View {
     }
 
     private func commandPaletteOrderedSwitcherPanels(for workspace: Workspace) -> [UUID] {
+        // cmux Lez: last used tabs first; never used tabs keep their spatial order after them.
+        let lastUsed = workspace.panelLastUsedAt
+        let spatial = commandPaletteSpatialSwitcherPanels(for: workspace)
+        return spatial.filter { lastUsed[$0] != nil }.sorted { lastUsed[$0]! > lastUsed[$1]! }
+            + spatial.filter { lastUsed[$0] == nil }
+    }
+
+    private func commandPaletteSpatialSwitcherPanels(for workspace: Workspace) -> [UUID] {
         let orderedPanelIds = workspace.sidebarOrderedPanelIds()
         guard orderedPanelIds.count < workspace.panels.count else { return orderedPanelIds }
 

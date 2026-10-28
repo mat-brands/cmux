@@ -125,7 +125,7 @@ extension ContentView {
             tabManager.focusTab(
                 workspaceId,
                 surfaceId: panelId,
-                suppressFlash: true,
+                suppressFlash: false,  // cmux Lez: flash the tab the switcher jumped to
                 dismissRestoredUnreadOnResume: true
             )
         }

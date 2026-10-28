@@ -18372,6 +18372,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
                 if workspace != nil { onExecuted?() }
                 return workspace != nil
             case .newSimulator: return performConfiguredNewSimulatorAction(context: context, onExecuted: onExecuted)
+            case .paneTabs:
+                guard let workspace = context.tabManager.selectedWorkspace,
+                      let pane = workspace.bonsplitController.focusedPaneId else { return false }
+                workspace.showLezPaneTabsMenu(inPane: pane)
+                onExecuted?()
+                return true
             case .newTerminal:
                 context.tabManager.newSurface()
                 onExecuted?()

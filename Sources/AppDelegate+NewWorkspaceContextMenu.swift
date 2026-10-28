@@ -118,7 +118,7 @@ extension AppDelegate {
         case .mobileConnect:
             return !MobileRemoteControlPolicy.isDisabled
         case .newWorkspace, .newTerminal, .splitRight, .splitDown,
-             .copyWorkingDirectory, .copyProjectRoot, .copyScreen:
+             .copyWorkingDirectory, .copyProjectRoot, .copyScreen, .paneTabs:
             return true
         }
     }

@@ -1044,7 +1044,10 @@ struct CmuxSurfaceTabBarButton: Codable, Sendable, Hashable, Identifiable {
 
     static let mobileConnect = actionReference(CmuxSurfaceTabBarBuiltInAction.mobileConnect.configID)
 
+    static let paneTabs = actionReference(CmuxSurfaceTabBarBuiltInAction.paneTabs.configID)  // cmux Lez
+
     static let defaults: [CmuxSurfaceTabBarButton] = [
+        .paneTabs,
         .newTerminal,
         .newBrowser,
         .splitRight,

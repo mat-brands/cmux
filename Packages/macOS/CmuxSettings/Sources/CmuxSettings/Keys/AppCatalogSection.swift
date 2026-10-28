@@ -365,7 +365,7 @@ public struct AppCatalogSection: SettingCatalogSection {
 
     public let commandPaletteSearchesAllSurfaces = DefaultsKey<Bool>(
         id: "app.commandPaletteSearchesAllSurfaces",
-        defaultValue: false,
+        defaultValue: true,  // cmux Lez: the switcher lists tabs by default
         userDefaultsKey: "commandPalette.switcherSearchAllSurfaces"
     )
 

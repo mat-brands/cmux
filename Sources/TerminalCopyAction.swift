@@ -24,7 +24,7 @@ extension CmuxSurfaceTabBarBuiltInAction {
         case .copyProjectRoot: return .projectRoot
         case .copyScreen: return .visibleScreen
         case .newWorkspace, .newAgentChat, .cloudVM, .newCloudWorkspace, .newCloudMachine,
-             .mobileConnect, .newTerminal, .newBrowser, .newSimulator, .splitRight, .splitDown:
+             .mobileConnect, .newTerminal, .newBrowser, .newSimulator, .splitRight, .splitDown, .paneTabs:
             return nil
         }
     }

@@ -345,7 +345,8 @@ public struct CommandPaletteSearchOrchestrator: Sendable {
         history: [String: CommandPaletteUsageEntry],
         now: TimeInterval
     ) -> Int {
-        guard let entry = history[commandId] else { return 0 }
+        // cmux Lez: tab rows keep their last-used order; palette usage must not pin a tab on top.
+        guard !commandId.hasPrefix("switcher.surface."), let entry = history[commandId] else { return 0 }
 
         let ageDays = max(0, now - entry.lastUsedAt) / 86_400
         let recencyBoost = max(0, 320 - Int(ageDays * 20))

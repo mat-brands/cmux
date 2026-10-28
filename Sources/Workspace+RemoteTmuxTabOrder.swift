@@ -1,3 +1,4 @@
+import AppKit
 import Bonsplit
 import Foundation
 
@@ -92,5 +93,42 @@ extension Workspace {
 
         scheduleTerminalGeometryReconcile()
         return true
+    }
+}
+
+// cmux Lez: a tab counts as used after it keeps focus for one second. Then it moves to the
+// front of its pane (after pinned tabs) and the switcher lists it first. The delay keeps
+// next/previous-tab cycling and tab drags from reshuffling the bar.
+extension Workspace {
+    func scheduleLezMarkPanelUsed(_ panelId: UUID) {
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard let self, self.focusedPanelId == panelId, NSEvent.pressedMouseButtons == 0 else { return }
+            self.panelLastUsedAt[panelId] = Date()
+            // A tmux mirror would also reorder the windows on the remote host, so leave it alone.
+            guard !self.isRemoteTmuxMirror,
+                  let paneId = self.paneId(forPanelId: panelId),
+                  let tabId = self.surfaceIdFromPanelId(panelId) else { return }
+            let tabs = self.bonsplitController.tabs(inPane: paneId)
+            guard let index = tabs.firstIndex(where: { $0.id == tabId }),
+                  index > tabs[..<index].filter(\.isPinned).count else { return }
+            _ = self.reorderSurface(panelId: panelId, toIndex: 0, focus: false)
+        }
+    }
+}
+
+// cmux Lez: the "Tabs in This Pane" tab bar button lists the pane's tabs in a menu.
+extension Workspace {
+    func showLezPaneTabsMenu(inPane pane: PaneID) {
+        let menu = NSMenu()
+        let selectedTabId = bonsplitController.selectedTab(inPane: pane)?.id
+        for tab in bonsplitController.tabs(inPane: pane) {
+            let item = SidebarRowClosureMenuItem(title: tab.title) { [weak self] in
+                self?.applyTabSelection(tabId: tab.id, inPane: pane)
+            }
+            item.state = tab.id == selectedTabId ? .on : .off
+            menu.addItem(item)
+        }
+        menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
     }
 }
