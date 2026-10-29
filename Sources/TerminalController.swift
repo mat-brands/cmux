@@ -2553,6 +2553,19 @@ class TerminalController {
             }
             // Recheck after admission so a policy refresh cannot cross into execution.
             guard socketAuthorizationIsCurrent(authorizationGeneration, passwordAuthorization: &passwordAuthorization) else { _ = await writer.writeAll(Data((Self.socketClientAccessDeniedResponse + "\n").utf8)); return }
+            // Password mode keeps cmux's own terminals working: a line that
+            // passes the cmux-only check needs no password, as in cmux-only mode.
+            if socketServer.accessMode.requiresPasswordAuth,
+               !passwordAuthorization.isAuthenticated,
+               SocketClientAuthorization().authorizedCommand(
+                   receivedCommand,
+                   peerProcessID: pid,
+                   peerHasSameUID: peerHasSameUID,
+                   capabilityAuthority: socketClientCapabilityAuthority,
+                   isDescendant: { isDescendant($0) }
+               ) != nil {
+                passwordAuthorization.admitCmuxTerminal()
+            }
             // Only a process in cmux's own descendant tree may attach the
             // internal automation envelope. Same-UID clients are authorized
             // for ordinary automation RPCs, but cannot forge a rule chain.

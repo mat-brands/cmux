@@ -5,6 +5,7 @@ internal import Foundation
 /// Tracks the credential revision proved by a socket connection.
 public struct SocketPasswordAuthorization: Sendable {
     private var credentialFingerprint: Data?
+    private var isCmuxTerminal = false
 
     var authenticatedCredentialFingerprint: Data? {
         credentialFingerprint
@@ -15,7 +16,16 @@ public struct SocketPasswordAuthorization: Sendable {
 
     /// Whether the connection has completed password authentication.
     public var isAuthenticated: Bool {
-        credentialFingerprint != nil
+        credentialFingerprint != nil || isCmuxTerminal
+    }
+
+    /// Admits a peer that passed the cmux-only check (a cmux descendant or a
+    /// holder of the inherited terminal capability). cmux's own shells send
+    /// their tty, folder, and git reports without a password; password mode
+    /// must not lock them out. The trust is not tied to the password, so a
+    /// password rotation keeps it.
+    public mutating func admitCmuxTerminal() {
+        isCmuxTerminal = true
     }
 
     /// Binds the connection to the password that just passed verification.

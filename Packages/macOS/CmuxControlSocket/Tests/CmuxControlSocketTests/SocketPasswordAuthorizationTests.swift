@@ -5,6 +5,17 @@ import Testing
 
 @Suite("Socket password authorization")
 struct SocketPasswordAuthorizationTests {
+    @Test func cmuxTerminalIsAdmittedWithoutPassword() {
+        var authorization = SocketPasswordAuthorization()
+        #expect(!authorization.isAuthenticated)
+        authorization.admitCmuxTerminal()
+        #expect(authorization.isAuthenticated)
+        #expect(authorization.permitsConnectionContinuation(
+            accessMode: .password,
+            currentPassword: "rotated-secret"
+        ))
+    }
+
     @Test func externalPasswordFileRotationRevokesCommandCapability() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("spa-\(UUID().uuidString)", isDirectory: true)
